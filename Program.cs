@@ -7,6 +7,9 @@ var builder = WebApplication.CreateBuilder(args);
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
 
+// === TAMBAHKAN BARIS INI untuk mendaftarkan service controller ===
+builder.Services.AddControllers();
+
 // 1. Ambil Connection String dari appsettings.json
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 
@@ -21,5 +24,11 @@ if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
 }
-app.UseHttpsRedirection();
+
+// Nonaktifkan sementara untuk development untuk menghindari masalah 404
+// app.UseHttpsRedirection();
+
+// === TAMBAHKAN BARIS INI untuk memetakan rute dari controller ===
+app.MapControllers();
+
 app.Run();
