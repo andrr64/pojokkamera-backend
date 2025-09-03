@@ -3,6 +3,9 @@ using Microsoft.EntityFrameworkCore;
 using pojokkamera_backend.Data;
 using pojokkamera_backend.Dtos.User;
 using pojokkamera_backend.Models;
+using pojokkamera_backend.Dtos.Error;
+using System.Runtime.InteropServices.Marshalling;
+
 // PENTING: Untuk hashing password, instal paket ini melalui terminal:
 // dotnet add package BCrypt.Net-Next
 
@@ -31,7 +34,9 @@ namespace pojokkamera_backend.Controllers
             // Cek apakah email atau nama pengguna sudah terdaftar di database
             if (await _context.User.AnyAsync(p => p.Username == registerDto.Username || p.Email == registerDto.Email))
             {
-                return Conflict("Nama pengguna atau email sudah terdaftar.");
+                return Conflict(
+                    new ErrorDto {Detail = "Nama pengguna atau email sudah terdaftar."}
+                );
             }
 
             // --- BAGIAN KRUSIAL: HASHING PASSWORD ---
@@ -44,7 +49,7 @@ namespace pojokkamera_backend.Controllers
                 Email = registerDto.Email,
                 HashKataSandi = passwordHash, // Simpan hash, bukan password asli
                 NamaLengkap = registerDto.NamaLengkap,
-                NomorTelepon = registerDto.NomorTelepon,
+                NomorTelepon = registerDto.NomorTelepon ?? "",
                 DibuatPada = DateTime.UtcNow
             };
 

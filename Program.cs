@@ -1,6 +1,8 @@
 using pojokkamera_backend.Data;
 using Microsoft.EntityFrameworkCore;
 using DotNetEnv;
+using Microsoft.OpenApi.Models;
+
 Env.Load();
 
 // Refaktor: fungsi untuk membuat connection string dan register DbContext
@@ -23,22 +25,36 @@ void InitDb(WebApplicationBuilder builder)
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
-builder.Services.AddOpenApi();
+// Tambahkan Swagger/OpenAPI service untuk .NET 8
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen(c =>
+{
+    c.SwaggerDoc("v1", new OpenApiInfo
+    {
+        Title = "Pojok Kamera API",
+        Version = "v1",
+        Description = "API untuk backend Pojok Kamera"
+    });
+});
+
 builder.Services.AddControllers();
 
-// Panggil fungsi
+// Panggil fungsi register DbContext
 InitDb(builder);
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
+// Configure Swagger hanya di Development
 if (app.Environment.IsDevelopment())
 {
-    app.MapOpenApi();
+    app.UseSwagger();
+    app.UseSwaggerUI(c =>
+    {
+        c.SwaggerEndpoint("/swagger/v1/swagger.json", "Pojok Kamera API v1");
+    });
 }
 
-// Nonaktifkan sementara untuk development untuk menghindari masalah 404
+// Nonaktifkan sementara HTTPS redirection jika perlu
 // app.UseHttpsRedirection();
 
 app.MapControllers();
