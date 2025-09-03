@@ -28,12 +28,12 @@ namespace pojokkamera_backend.Models
 
         // Navigation Properties (Many-to-One)
         [ForeignKey("IdPengguna")]
-        public Pengguna? Pengguna { get; set; }
+        public User? Pengguna { get; set; }
 
         [ForeignKey("IdAlamatPengiriman")]
         public Alamat? AlamatPengiriman { get; set; }
 
         // Navigation Property (One-to-Many)
-        public ICollection<DetailPesanan> DetailPesanan { get; set; } = new List<DetailPesanan>();
+        public ICollection<DetailPesanan> DetailPesanan { get; set; } = [];
     }
 }

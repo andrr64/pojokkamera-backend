@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using pojokkamera_backend.Data;
-using pojokkamera_backend.Dtos.Pengguna;
+using pojokkamera_backend.Dtos.User;
 using pojokkamera_backend.Models;
 // PENTING: Untuk hashing password, instal paket ini melalui terminal:
 // dotnet add package BCrypt.Net-Next
@@ -9,13 +9,13 @@ using pojokkamera_backend.Models;
 namespace pojokkamera_backend.Controllers
 {
     [ApiController]
-    [Route("api/v1/pengguna")]
-    public class PenggunaController : ControllerBase
+    [Route("api/v1/user")]
+    public class UserController : ControllerBase
     {
         private readonly PojokKameraDbContext _context;
 
         // Dependency Injection untuk DbContext
-        public PenggunaController(PojokKameraDbContext context)
+        public UserController(PojokKameraDbContext context)
         {
             _context = context;
         }
@@ -24,26 +24,23 @@ namespace pojokkamera_backend.Controllers
         /// Endpoint untuk mendaftarkan pengguna baru.
         /// </summary>
         [HttpPost("register")]
-        public async Task<IActionResult> RegisterPengguna([FromBody] RegisterPenggunaDto registerDto)
+        public async Task<IActionResult> UserRegister([FromBody] UserRegisterDto registerDto)
         {
             // Validasi input dilakukan secara otomatis oleh [ApiController] berdasarkan DTO.
-            // Jika ada yang tidak valid, framework akan otomatis mengembalikan response 400 Bad Request.
 
             // Cek apakah email atau nama pengguna sudah terdaftar di database
-            if (await _context.Pengguna.AnyAsync(p => p.NamaPengguna == registerDto.NamaPengguna || p.Email == registerDto.Email))
+            if (await _context.User.AnyAsync(p => p.Username == registerDto.Username || p.Email == registerDto.Email))
             {
                 return Conflict("Nama pengguna atau email sudah terdaftar.");
             }
 
             // --- BAGIAN KRUSIAL: HASHING PASSWORD ---
-            // Jangan pernah menyimpan password sebagai plain text. Selalu hash password sebelum disimpan.
-            // Gunakan library seperti BCrypt.Net untuk ini.
             string passwordHash = BCrypt.Net.BCrypt.HashPassword(registerDto.Password);
 
             // Buat entitas Pengguna baru dari data DTO
-            var penggunaBaru = new Pengguna
+            var penggunaBaru = new User
             {
-                NamaPengguna = registerDto.NamaPengguna,
+                Username = registerDto.Username,
                 Email = registerDto.Email,
                 HashKataSandi = passwordHash, // Simpan hash, bukan password asli
                 NamaLengkap = registerDto.NamaLengkap,
@@ -52,12 +49,24 @@ namespace pojokkamera_backend.Controllers
             };
 
             // Tambahkan pengguna baru ke DbContext dan simpan perubahan ke database
-            _context.Pengguna.Add(penggunaBaru);
+            _context.User.Add(penggunaBaru);
             await _context.SaveChangesAsync();
+            var responseDto = new UserResponseDto
+            {
+                Id = penggunaBaru.Id,
+                Username = penggunaBaru.Username,
+                Email = penggunaBaru.Email,
+                NamaLengkap = penggunaBaru.NamaLengkap,
+                DibuatPada = penggunaBaru.DibuatPada
+            };
 
             // Kembalikan response 201 Created yang menandakan sukses.
             // Sebaiknya buat DTO lain untuk respons agar tidak mengembalikan data sensitif.
-            return CreatedAtAction(nameof(RegisterPengguna), new { id = penggunaBaru.Id }, "Registrasi pengguna berhasil.");
+            return CreatedAtAction(
+                nameof(UserRegister),
+                new { id = penggunaBaru.Id },
+                responseDto
+            );
         }
     }
 }
