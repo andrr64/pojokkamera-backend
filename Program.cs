@@ -1,4 +1,5 @@
 using pojokkamera_backend.Data;
+using pojokkamera_backend.Services;
 using Microsoft.EntityFrameworkCore;
 using DotNetEnv;
 using Microsoft.OpenApi.Models;
@@ -41,6 +42,12 @@ builder.Services.AddControllers();
 
 // Panggil fungsi register DbContext
 InitDb(builder);
+
+// Daftarkan service custom
+builder.Services.AddScoped<AuthService>();
+// kalau nanti ada service lain, tinggal tambahin:
+// builder.Services.AddScoped<UserService>();
+// builder.Services.AddScoped<OrderService>();
 
 var app = builder.Build();
 
