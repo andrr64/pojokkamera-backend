@@ -38,7 +38,25 @@ builder.Services.AddSwaggerGen(c =>
     });
 });
 
-builder.Services.AddControllers();
+builder.Services.AddControllers().
+    AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase; // SomeKey -> someKey
+    });
+
+// CORS
+builder.Services.AddCors(options =>
+{
+options.AddPolicy("AllowFrontend",
+    policy =>
+    {
+        policy.WithOrigins("http://localhost:3000") // frontend Next.js
+              .AllowAnyHeader()
+              .AllowAnyMethod()
+              .AllowCredentials(); // kalau pakai cookie auth
+    });
+});
+
 
 // Panggil fungsi register DbContext
 InitDb(builder);
@@ -63,7 +81,8 @@ if (app.Environment.IsDevelopment())
 
 // Nonaktifkan sementara HTTPS redirection jika perlu
 // app.UseHttpsRedirection();
-
+app.UseCors("AllowFrontend");
+app.UseAuthorization();
 app.MapControllers();
 
 app.Run();
