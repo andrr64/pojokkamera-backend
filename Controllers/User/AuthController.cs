@@ -26,7 +26,7 @@ namespace pojokkamera_backend.Controllers.User
                 return Conflict(result);
             return Ok(result);
         }
-        
+
         [HttpPost("login")]
         public async Task<IActionResult> UserLogin([FromBody] UserLoginDto loginDto)
         {
@@ -41,13 +41,22 @@ namespace pojokkamera_backend.Controllers.User
                 result.Data.Username
             );
 
-            // Kirim token di response body, bukan cookie
+            // Set cookie untuk web
+            Response.Cookies.Append("access_token", token, new CookieOptions
+            {
+                HttpOnly = true,
+                Secure = true, // pastikan HTTPS
+                SameSite = SameSiteMode.Lax,
+                Expires = DateTimeOffset.UtcNow.AddHours(1)
+            });
+
+            // Kirim juga token di body (untuk mobile)
             return Ok(new
             {
                 Success = true,
                 Detail = "Login berhasil",
-                Data = result.Data,
-                AccessToken = token
+                result.Data,
+                AccessToken = token // mobile bisa ambil ini
             });
         }
 
