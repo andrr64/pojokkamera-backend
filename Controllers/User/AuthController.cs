@@ -26,12 +26,12 @@ namespace pojokkamera_backend.Controllers.User
                 return Conflict(result);
             return Ok(result);
         }
-
+        
         [HttpPost("login")]
         public async Task<IActionResult> UserLogin([FromBody] UserLoginDto loginDto)
         {
             var result = await _service.Login(loginDto);
-            
+
             if (!result.Success || result.Data == null)
                 return Conflict(result);
 
@@ -41,15 +41,15 @@ namespace pojokkamera_backend.Controllers.User
                 result.Data.Username
             );
 
-            Response.Cookies.Append("access_token", token, new CookieOptions
+            // Kirim token di response body, bukan cookie
+            return Ok(new
             {
-                HttpOnly = true,
-                Secure = true, // hanya HTTPS
-                SameSite = SameSiteMode.Strict,
-                Expires = DateTime.UtcNow.AddDays(7)
+                Success = true,
+                Detail = "Login berhasil",
+                Data = result.Data,
+                AccessToken = token
             });
-
-            return Ok(result);
         }
+
     }
 }

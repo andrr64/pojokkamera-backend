@@ -1,9 +1,8 @@
 using pojokkamera_backend.Data;
 using pojokkamera_backend.Dtos.Common;
 using pojokkamera_backend.Dtos.User;
-using pojokkamera_backend.Models;
 using Microsoft.EntityFrameworkCore;
-using pojokkamera_backend.Security;
+using pojokkamera_backend.Models;
 
 namespace pojokkamera_backend.Services
 {
@@ -26,7 +25,7 @@ namespace pojokkamera_backend.Services
 
             string passwordHash = BCrypt.Net.BCrypt.HashPassword(dto.Password);
 
-            var user = new User
+            var user = new UserModel
             {
                 Username = dto.Username,
                 Email = dto.Email,

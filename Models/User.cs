@@ -6,7 +6,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 namespace pojokkamera_backend.Models
 {
     [Table("User")]
-    public class User
+    public class UserModel
     {
         [Key]
         public long Id { get; set; }

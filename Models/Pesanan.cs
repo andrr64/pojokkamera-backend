@@ -28,7 +28,7 @@ namespace pojokkamera_backend.Models
 
         // Navigation Properties (Many-to-One)
         [ForeignKey("IdPengguna")]
-        public User? Pengguna { get; set; }
+        public UserModel? Pengguna { get; set; }
 
         [ForeignKey("IdAlamatPengiriman")]
         public Alamat? AlamatPengiriman { get; set; }

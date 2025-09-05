@@ -10,7 +10,7 @@ namespace pojokkamera_backend.Data
         }
 
         // Daftarkan semua model Anda sebagai DbSet di sini
-        public DbSet<User> User { get; set; }
+        public DbSet<UserModel> User { get; set; }
         public DbSet<Alamat> Alamat { get; set; }
         public DbSet<Merek> Merek { get; set; }
         public DbSet<KategoriProduk> KategoriProduk { get; set; }

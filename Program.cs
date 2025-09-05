@@ -3,6 +3,7 @@ using pojokkamera_backend.Services;
 using Microsoft.EntityFrameworkCore;
 using DotNetEnv;
 using Microsoft.OpenApi.Models;
+using pojokkamera_backend.Services.User;
 
 Env.Load();
 
@@ -20,6 +21,7 @@ builder.Services.AddDbContext<PojokKameraDbContext>(options =>
 
 // === Services ===
 builder.Services.AddScoped<AuthService>();
+builder.Services.AddScoped<UserService>();
 
 // === Controllers & JSON ===
 builder.Services.AddControllers()
