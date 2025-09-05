@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using pojokkamera_backend.Dtos.User;
 using pojokkamera_backend.Services;
+using pojokkamera_backend.Security;
 
 namespace pojokkamera_backend.Controllers.User
 {
@@ -30,8 +31,24 @@ namespace pojokkamera_backend.Controllers.User
         public async Task<IActionResult> UserLogin([FromBody] UserLoginDto loginDto)
         {
             var result = await _service.Login(loginDto);
-            if (!result.Success)
+            
+            if (!result.Success || result.Data == null)
                 return Conflict(result);
+
+            var token = JWTToken.GenerateUserJWTAccessToken(
+                result.Data.Id.ToString(),
+                result.Data.Email,
+                result.Data.Username
+            );
+
+            Response.Cookies.Append("access_token", token, new CookieOptions
+            {
+                HttpOnly = true,
+                Secure = true, // hanya HTTPS
+                SameSite = SameSiteMode.Strict,
+                Expires = DateTime.UtcNow.AddDays(7)
+            });
+
             return Ok(result);
         }
     }

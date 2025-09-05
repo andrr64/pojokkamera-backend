@@ -3,6 +3,7 @@ using pojokkamera_backend.Dtos.Common;
 using pojokkamera_backend.Dtos.User;
 using pojokkamera_backend.Models;
 using Microsoft.EntityFrameworkCore;
+using pojokkamera_backend.Security;
 
 namespace pojokkamera_backend.Services
 {
@@ -57,6 +58,7 @@ namespace pojokkamera_backend.Services
             {
                 return ApiResponse<UserResponseDto>.Fail("Email atau password salah.");
             }
+
 
             var response = new UserResponseDto
             {
