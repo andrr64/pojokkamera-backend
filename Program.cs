@@ -6,27 +6,29 @@ using Microsoft.OpenApi.Models;
 
 Env.Load();
 
-// Refaktor: fungsi untuk membuat connection string dan register DbContext
-void InitDb(WebApplicationBuilder builder)
-{
-    // Ambil variabel environment
-    var dbHost = Environment.GetEnvironmentVariable("DB_HOST");
-    var dbName = Environment.GetEnvironmentVariable("DB_DATABASE");
-    var dbUser = Environment.GetEnvironmentVariable("DB_USERNAME");
-    var dbPass = Environment.GetEnvironmentVariable("DB_PASSWORD");
-
-    // Buat connection string
-    var connectionString = $"Host={dbHost};Database={dbName};Username={dbUser};Password={dbPass}";
-
-    // Daftarkan DbContext
-    builder.Services.AddDbContext<PojokKameraDbContext>(options =>
-        options.UseNpgsql(connectionString)
-    );
-}
-
 var builder = WebApplication.CreateBuilder(args);
 
-// Tambahkan Swagger/OpenAPI service untuk .NET 8
+// === Database ===
+var dbHost = Environment.GetEnvironmentVariable("DB_HOST");
+var dbName = Environment.GetEnvironmentVariable("DB_DATABASE");
+var dbUser = Environment.GetEnvironmentVariable("DB_USERNAME");
+var dbPass = Environment.GetEnvironmentVariable("DB_PASSWORD");
+
+builder.Services.AddDbContext<PojokKameraDbContext>(options =>
+    options.UseNpgsql($"Host={dbHost};Database={dbName};Username={dbUser};Password={dbPass}")
+);
+
+// === Services ===
+builder.Services.AddScoped<AuthService>();
+
+// === Controllers & JSON ===
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase;
+    });
+
+// === Swagger ===
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
 {
@@ -38,51 +40,29 @@ builder.Services.AddSwaggerGen(c =>
     });
 });
 
-builder.Services.AddControllers().
-    AddJsonOptions(options =>
-    {
-        options.JsonSerializerOptions.PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase; // SomeKey -> someKey
-    });
-
-// CORS
+// === CORS ===
 builder.Services.AddCors(options =>
 {
-options.AddPolicy("AllowFrontend",
-    policy =>
+    options.AddPolicy("AllowFrontend", policy =>
     {
-        policy.WithOrigins("http://localhost:3000") // frontend Next.js
+        policy.WithOrigins("http://localhost:3000")
               .AllowAnyHeader()
               .AllowAnyMethod()
-              .AllowCredentials(); // kalau pakai cookie auth
+              .AllowCredentials();
     });
 });
 
-
-// Panggil fungsi register DbContext
-InitDb(builder);
-
-// Daftarkan service custom
-builder.Services.AddScoped<AuthService>();
-// kalau nanti ada service lain, tinggal tambahin:
-// builder.Services.AddScoped<UserService>();
-// builder.Services.AddScoped<OrderService>();
-
 var app = builder.Build();
 
-// Configure Swagger hanya di Development
+// === Middleware ===
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
-    app.UseSwaggerUI(c =>
-    {
-        c.SwaggerEndpoint("/swagger/v1/swagger.json", "Pojok Kamera API v1");
-    });
+    app.UseSwaggerUI();
 }
 
-// Nonaktifkan sementara HTTPS redirection jika perlu
-// app.UseHttpsRedirection();
+// app.UseHttpsRedirection(); // aktifkan kalau perlu
 app.UseCors("AllowFrontend");
 app.UseAuthorization();
 app.MapControllers();
-
 app.Run();
